@@ -1,0 +1,29 @@
+#! /bin/bash
+usrcount=""
+
+if [ $(id -u) -eq 0 ]; then
+	echo "Adding users from file location"
+	echo "./usernames.txt"
+
+	for line in $(cat ./usernames.txt); do
+		usrcount="$(cat /etc/passwd | grep $line | wc -l)"
+		
+			if [ $usrcount -eq 0 ]; then
+				
+				echo "Adding user: $line"
+				adduser --gecos "user" --disabled-password $line
+				echo "$line:htc" | chpasswd
+				continue
+
+			elif [ $usrcount -ge 1 ]; then
+				
+				echo "$line already exists; updating password"
+				echo "$line:htc" | chpasswd
+				continue
+			fi
+	done
+else
+
+	echo "Requires root!"
+	exit 2
+fi
